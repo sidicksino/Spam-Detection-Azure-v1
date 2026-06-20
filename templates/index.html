@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Spam Detector</title>
+    <!-- Modern typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Outfit:wght@600;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-primary: #030712;
+            --accent-violet: #a78bfa;
+            --accent-pink: #f472b6;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: radial-gradient(circle at center, #1e1b4b 0%, var(--bg-primary) 100%);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .app-container {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 40px 30px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+            text-align: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--accent-violet) 0%, var(--accent-pink) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid var(--glass-border);
+            border-radius: 14px;
+            color: var(--text-primary);
+            padding: 16px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            resize: none;
+            outline: none;
+            transition: all 0.2s ease-in-out;
+        }
+
+        textarea:focus {
+            border-color: var(--accent-violet);
+            box-shadow: 0 0 15px rgba(167, 139, 250, 0.25);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #7c3aed 0%, #db2777 100%);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(124, 58, 237, 0.35);
+            filter: brightness(1.05);
+        }
+
+        button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .loader {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .result-card {
+            margin-top: 28px;
+            padding: 20px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid var(--glass-border);
+            display: none;
+            animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            border-radius: 20px;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .badge.spam {
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #f87171;
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
+        }
+
+        .badge.ham {
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #34d399;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+        }
+
+        .badge.error {
+            background: rgba(245, 158, 11, 0.12);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            color: #fbbf24;
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.2);
+        }
+
+        .result-text {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="app-container">
+        <h1>AI Spam Detector</h1>
+        <p class="subtitle">Enter a message below to classify it in real-time</p>
+
+        <div class="form-group">
+            <label for="message">Message Text</label>
+            <textarea id="message" placeholder="Type or paste your message details here..."></textarea>
+        </div>
+
+        <button id="submitBtn" onclick="analyzeText()">
+            <span class="loader" id="btnLoader"></span>
+            <span id="btnText">Analyze Message</span>
+        </button>
+
+        <div class="result-card" id="resultCard">
+            <div id="resultBadge" class="badge">Spam</div>
+            <p class="result-text" id="resultText"></p>
+        </div>
+    </div>
+
+    <script>
+        async function analyzeText() {
+            const messageInput = document.getElementById('message');
+            const submitBtn = document.getElementById('submitBtn');
+            const btnLoader = document.getElementById('btnLoader');
+            const btnText = document.getElementById('btnText');
+            const resultCard = document.getElementById('resultCard');
+            const resultBadge = document.getElementById('resultBadge');
+            const resultText = document.getElementById('resultText');
+
+            const text = messageInput.value.trim();
+            if (!text) {
+                alert('Please enter some text before analyzing!');
+                return;
+            }
+
+            // Enter loading state
+            submitBtn.disabled = true;
+            btnLoader.style.display = 'inline-block';
+            btnText.textContent = 'Processing...';
+            resultCard.style.display = 'none';
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message: text })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || 'An error occurred during prediction.');
+                }
+
+                // Show prediction results
+                resultCard.style.display = 'block';
+                const prediction = data.prediction.toLowerCase();
+
+                if (prediction === 'spam') {
+                    resultBadge.className = 'badge spam';
+                    resultBadge.textContent = 'Spam Detected';
+                    resultText.textContent = 'Warning: This message matches profiles of fraudulent, marketing, or malicious communications.';
+                } else {
+                    resultBadge.className = 'badge ham';
+                    resultBadge.textContent = 'Ham (Safe)';
+                    resultText.textContent = 'This message appears safe. No indicators of spam or phishing detected.';
+                }
+
+            } catch (err) {
+                // Show error state
+                resultCard.style.display = 'block';
+                resultBadge.className = 'badge error';
+                resultBadge.textContent = 'Error';
+                resultText.textContent = err.message;
+            } finally {
+                // Reset button state
+                submitBtn.disabled = false;
+                btnLoader.style.display = 'none';
+                btnText.textContent = 'Analyze Message';
+            }
+        }
+    </script>
+</body>
+
+</html>
