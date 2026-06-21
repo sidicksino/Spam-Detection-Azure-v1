@@ -2,7 +2,7 @@
 
 In our cloud-native machine learning lifecycle, all files, models, and run outputs are managed on Azure. The first stage is **Data Collection & Storage**. We use **Azure Blob Storage** (similar to AWS S3) as our secure data repository.
 
-For this guide, we will set up the storage account, create containers for our datasets, and upload our raw spam detection dataset (`spam.csv`).
+For this guide, we will set up the storage account, create containers for our datasets, and upload our raw spam detection dataset (`spam.csv`) [https://archive.ics.uci.edu/dataset/228/sms+spam+collection].
 
 ---
 
